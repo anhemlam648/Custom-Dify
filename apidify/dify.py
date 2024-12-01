@@ -12,7 +12,7 @@ CORS(app)
 API_URL = "http://localhost/v1/chat-messages" 
 
 # Token
-Token = 'app-LFQO52YCTCCXckAN4nQA8woc'
+Token = 'YourToken'
 
 # Headers
 headers = {
