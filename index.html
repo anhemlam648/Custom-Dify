@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./style/style.css">
+    <title>Chat Bot Test</title>
+</head>
+<body class="light-mode" id="ChatBot">
+
+    <div class="chatbot-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1 class="StartChat">Welcome to the ChatBot</h1>
+            <button id="Toggle">
+                <i id="sun-icon" class="fas fa-sun"></i>
+                <i id="moon-icon" class="fas fa-moon" style="display: none;"></i>
+            </button>
+        </div>
+
+        <!-- Chat Section -->
+        <div class="chat-container" id="chatContainers"></div>
+
+        <!-- Input Section -->
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message here" />
+            <button id="submitBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <div class="content">
+            <h2 style="color: #00FFFF;">&copy; 2024 By Vu Trung Nghia</h2>
+            <button class="copy-button" onclick="copy()">Copy Info</button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        //Handle function Copy
+        function copy() {
+            var info = `Work: CMC TS\nEmail: vunghia467@gmail.com\nAddress: TP.HCM\nPhone: 0357708256`;
+            var textArea = document.createElement('textarea');
+            textArea.value = info;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            alert('Information copied successfully!');
+        }
+
+        // Toggle between light and dark mode
+        function toggle() {
+            var formChatBot = document.getElementById("ChatBot");
+            var sunIcon = document.getElementById("sun-icon");
+            var moonIcon = document.getElementById("moon-icon");
+
+            if (formChatBot.classList.contains('dark-mode')) {
+                formChatBot.classList.remove('dark-mode');
+                formChatBot.classList.add('light-mode');
+                sunIcon.style.display = "inline";
+                moonIcon.style.display = "none";
+            } else {
+                formChatBot.classList.remove('light-mode');
+                formChatBot.classList.add('dark-mode');
+                sunIcon.style.display = "none";
+                moonIcon.style.display = "inline";
+            }
+        }
+
+        // Set the click event for mode toggle
+        document.getElementById("Toggle").addEventListener("click", toggle);
+    </script>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            const userQuery = document.getElementById('userInput').value;
+
+            // Display user message
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.classList.add('user-message');
+            const userAvatar = document.createElement('img');
+            userAvatar.src = './style/image/freelancer.png';
+            userAvatar.alt = 'User Avatar';
+            userAvatar.classList.add('avatar');
+            userMessageDiv.appendChild(userAvatar);
+            const userMessageContent = document.createElement('div');
+            userMessageContent.classList.add('message-content');
+            userMessageContent.textContent = userQuery;
+            userMessageDiv.appendChild(userMessageContent);
+            document.getElementById('chatContainers').appendChild(userMessageDiv);
+            document.getElementById('userInput').value = "";
+       
+            // Scroll to the bottom when a new message is added
+            document.getElementById('chatContainers').scrollTop = document.getElementById('chatContainers').scrollHeight;
+
+            // Send data to server
+            // const formData = new FormData();
+            // formData.append('query', userQuery);
+            // formData.append('inputs', {});
+            // formData.append('user', 'abc-123');
+            // formData.append('response_mode', 'blocking');
+            //  formData.append('conversation_id', '');
+
+            // Send to the server
+            const data = {
+                "query": userQuery,
+                "inputs": {},
+                "response_mode": "blocking",
+                "conversation_id": "",
+                "user": "abc-123",
+                "files": [
+                    {
+                    "type": "image",
+                    "transfer_method": "remote_url",
+                    "url": "https://as1.ftcdn.net/v2/jpg/05/73/32/00/1000_F_573320087_3dguvbTXxw0UJ8iqyR8YiD4t0q7XzXHB.jpg"
+                    }
+                ]       
+            };
+
+            //Call API handle chat
+            try {
+                const response = await fetch('http://localhost:3010/chat-messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                // Bot message
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.classList.add('bot-message');
+                const botAvatar = document.createElement('img');
+                botAvatar.src = './style/image/chatbot.png';
+                botAvatar.alt = 'Bot Avatar';
+                botAvatar.classList.add('avatar');
+                botMessageDiv.appendChild(botAvatar);
+                const botMessageContent = document.createElement('div');
+                botMessageContent.classList.add('message-content');
+                botMessageContent.textContent = result.answer || "Sorry, I didn't get that.";
+                botMessageDiv.appendChild(botMessageContent);
+                document.getElementById('chatContainers').appendChild(botMessageDiv);
+
+                document.getElementById('chatContainers').scrollTop = document.getElementById('chatContainers').scrollHeight;
+
+            } catch (error) {
+                console.error('Error:', error);
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.classList.add('bot-message');
+                botMessageDiv.textContent = "Error: " + error.message;
+                document.getElementById('chatContainers').appendChild(botMessageDiv);
+                document.getElementById('chatContainers').scrollTop = document.getElementById('chatContainers').scrollHeight;
+            }
+            
+        });
+        </script>
+
+        <!-- handle Enter -->
+        <!-- <script>
+            document.getElementById('userInput').addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    document.getElementById('submitBtn').click(); 
+                }
+            });
+        </script> -->
+
+        <!-- <script>
+            function convertToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result); // get result even read finish
+                reader.onerror = reject; 
+                reader.readAsDataURL(file); read file Base 64
+            });
+        }
+        </script> -->
+</body>
+</html>
